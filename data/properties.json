@@ -1,56 +1,133 @@
 {
-  "company_name": "النخيل العقارية",
+  "company_name": "ركاز العقارية",
   "projects": [
     {
-      "name": "نخيل ريزيدنس",
-      "developer": "النخيل العقارية",
-      "location": "الشيخ زايد — بجوار هايبر وان",
-      "area": "الشيخ زايد، الجيزة",
-      "description": "كمبوند سكني متكامل على مساحة 50 فدان",
+      "name": "ركاز كومباوند",
+      "developer": "ركاز العقارية",
+      "location": "المحمودية، محافظة البحيرة",
+      "area": "المحمودية، البحيرة",
+      "description": "ركاز كومباوند هو أول كمبوند سكني متكامل في قلب المحمودية، البحيرة. مصمم على مساحة 30 فدان بتصميم عصري وخدمات متكاملة، عشان يوفرلك حياة راقية ومريحة في مكان قريب من كل حاجة.",
+      "highlights": [
+        "أول كمبوند متكامل في المحمودية",
+        "موقع مميز على الطريق الرئيسي",
+        "تصميمات عصرية ومساحات خضراء واسعة",
+        "أمن وحراسة 24 ساعة",
+        "قريب من المدارس والمستشفيات والمواصلات"
+      ],
       "units": [
-        {"type": "شقة", "size_from": 120, "size_to": 200, "price_from": 3500000, "price_to": 6000000, "floor_options": "الأرضي للدور 7", "views": ["حديقة", "بحيرة"], "payment_plans": ["خطة 7 سنين: 10% مقدم، 84 شهر", "خطة 5 سنين: 15% مقدم، 60 شهر"], "availability_status": "available"},
-        {"type": "دوبلكس", "size_from": 250, "size_to": 350, "price_from": 7000000, "price_to": 10000000, "floor_options": "الدور 6 و 7", "views": ["بانوراما", "بحيرة"], "payment_plans": ["خطة 7 سنين: 10% مقدم، 84 شهر", "خطة 5 سنين: 15% مقدم، 60 شهر"], "availability_status": "available"},
-        {"type": "بنتهاوس", "size_from": 200, "size_to": 280, "price_from": 8000000, "price_to": 12000000, "floor_options": "الدور الأخير", "views": ["بانوراما 360°"], "payment_plans": ["خطة 7 سنين: 10% مقدم، 84 شهر", "خطة 5 سنين: 15% مقدم، 60 شهر"], "availability_status": "available"}
+        {
+          "type": "شقة غرفة نوم واحدة",
+          "bedrooms": 1,
+          "bathrooms": 1,
+          "size_from": 70,
+          "size_to": 90,
+          "price_from": 850000,
+          "price_to": 1200000,
+          "floor_options": "الأرضي للدور 5",
+          "views": ["حديقة", "شارع رئيسي"],
+          "finishing": "نص تشطيب",
+          "payment_plans": [
+            "كاش: خصم 10%",
+            "تقسيط 3 سنين: 20% مقدم والباقي على 36 شهر",
+            "تقسيط 5 سنين: 30% مقدم والباقي على 60 شهر"
+          ],
+          "availability_status": "available"
+        },
+        {
+          "type": "شقة غرفتين نوم",
+          "bedrooms": 2,
+          "bathrooms": 1,
+          "size_from": 100,
+          "size_to": 130,
+          "price_from": 1300000,
+          "price_to": 1800000,
+          "floor_options": "الأرضي للدور 5",
+          "views": ["حديقة", "بحيرة صناعية"],
+          "finishing": "نص تشطيب",
+          "payment_plans": [
+            "كاش: خصم 10%",
+            "تقسيط 3 سنين: 20% مقدم والباقي على 36 شهر",
+            "تقسيط 5 سنين: 30% مقدم والباقي على 60 شهر"
+          ],
+          "availability_status": "available"
+        },
+        {
+          "type": "شقة 3 غرف نوم",
+          "bedrooms": 3,
+          "bathrooms": 2,
+          "size_from": 140,
+          "size_to": 180,
+          "price_from": 1900000,
+          "price_to": 2600000,
+          "floor_options": "الأرضي للدور 5",
+          "views": ["حديقة", "بحيرة صناعية", "بانوراما"],
+          "finishing": "نص تشطيب",
+          "payment_plans": [
+            "كاش: خصم 10%",
+            "تقسيط 3 سنين: 20% مقدم والباقي على 36 شهر",
+            "تقسيط 5 سنين: 30% مقدم والباقي على 60 شهر",
+            "تقسيط 7 سنين: 40% مقدم والباقي على 84 شهر"
+          ],
+          "availability_status": "available"
+        },
+        {
+          "type": "دوبلكس",
+          "bedrooms": 4,
+          "bathrooms": 3,
+          "size_from": 220,
+          "size_to": 280,
+          "price_from": 3200000,
+          "price_to": 4500000,
+          "floor_options": "الدور 4 و 5 (آخر دورين)",
+          "views": ["بانوراما", "حديقة خاصة بالسطح"],
+          "finishing": "نص تشطيب",
+          "payment_plans": [
+            "كاش: خصم 10%",
+            "تقسيط 5 سنين: 30% مقدم والباقي على 60 شهر",
+            "تقسيط 7 سنين: 40% مقدم والباقي على 84 شهر"
+          ],
+          "availability_status": "available"
+        },
+        {
+          "type": "بنتهاوس",
+          "bedrooms": 3,
+          "bathrooms": 2,
+          "size_from": 180,
+          "size_to": 220,
+          "price_from": 2800000,
+          "price_to": 3800000,
+          "floor_options": "الدور الأخير + روف خاص",
+          "views": ["بانوراما 360°", "إطلالة على الكمبوند كله"],
+          "finishing": "نص تشطيب",
+          "payment_plans": [
+            "كاش: خصم 10%",
+            "تقسيط 5 سنين: 30% مقدم والباقي على 60 شهر",
+            "تقسيط 7 سنين: 40% مقدم والباقي على 84 شهر"
+          ],
+          "availability_status": "available"
+        }
       ],
       "payment_plans": [
-        {"name": "خطة 7 سنين", "down_payment": "10%", "installments": "84 شهر بدون فوايد", "delivery": "2027"},
-        {"name": "خطة 5 سنين", "down_payment": "15%", "installments": "60 شهر", "delivery": "2027"}
+        {"name": "كاش", "down_payment": "100%", "installments": "لا يوجد", "discount": "خصم 10% على السعر الكلي"},
+        {"name": "تقسيط 3 سنين", "down_payment": "20%", "installments": "36 شهر بدون فوايد", "delivery": "2027"},
+        {"name": "تقسيط 5 سنين", "down_payment": "30%", "installments": "60 شهر", "delivery": "2027"},
+        {"name": "تقسيط 7 سنين", "down_payment": "40%", "installments": "84 شهر", "delivery": "2027"}
       ],
-      "amenities": ["حمام سباحة", "نادي رياضي", "مسجد", "منطقة تجارية", "أمن 24 ساعة", "مساحات خضراء"],
+      "amenities": [
+        "حمام سباحة للكبار والأطفال",
+        "نادي رياضي متكامل (جيم)",
+        "مسجد",
+        "منطقة تجارية ومحلات",
+        "أمن وحراسة 24 ساعة",
+        "كاميرات مراقبة",
+        "مساحات خضراء وحدائق",
+        "بحيرات صناعية",
+        "ممشى ومسارات جري",
+        "كيدز إريا (منطقة ألعاب أطفال)",
+        "جراج تحت الأرض",
+        "صيدلية وعيادات"
+      ],
       "delivery_status": "تحت الإنشاء — التسليم 2027"
-    },
-    {
-      "name": "النخيل كابيتال",
-      "developer": "النخيل العقارية",
-      "location": "العاصمة الإدارية الجديدة — الحي السكني R7",
-      "area": "العاصمة الإدارية الجديدة",
-      "description": "مشروع سكني فاخر في قلب العاصمة الإدارية",
-      "units": [
-        {"type": "شقة", "size_from": 100, "size_to": 180, "price_from": 2800000, "price_to": 5500000, "floor_options": "الأرضي للدور 10", "views": ["النهر الأخضر", "حديقة"], "payment_plans": ["خطة 10 سنين: 5% مقدم، 120 شهر", "كاش: خصم 25%"], "availability_status": "available"},
-        {"type": "فيلا مستقلة", "size_from": 300, "size_to": 500, "price_from": 15000000, "price_to": 25000000, "floor_options": "أرضي + أول", "views": ["حديقة خاصة"], "payment_plans": ["خطة 10 سنين: 5% مقدم، 120 شهر", "كاش: خصم 25%"], "availability_status": "available"}
-      ],
-      "payment_plans": [
-        {"name": "خطة 10 سنين", "down_payment": "5%", "installments": "120 شهر", "delivery": "2028"},
-        {"name": "كاش", "down_payment": "100%", "installments": "لا يوجد", "delivery": "فوري عند الاستلام", "discount": "خصم 25%"}
-      ],
-      "amenities": ["مول تجاري", "مدارس دولية", "مستشفى", "نادي اجتماعي", "مسارات جري", "بحيرات صناعية"],
-      "delivery_status": "تحت الإنشاء — التسليم 2028"
-    },
-    {
-      "name": "نخيل الساحل",
-      "developer": "النخيل العقارية",
-      "location": "الساحل الشمالي — الكيلو 200 طريق الإسكندرية مطروح",
-      "area": "رأس الحكمة، الساحل الشمالي",
-      "description": "منتجع سياحي فاخر على البحر مباشرة",
-      "units": [
-        {"type": "شاليه", "size_from": 80, "size_to": 150, "price_from": 4000000, "price_to": 8000000, "floor_options": "أرضي أو أول", "views": ["بحر", "حمام سباحة"], "payment_plans": ["خطة 8 سنين: 10% مقدم، 96 شهر"], "availability_status": "available"},
-        {"type": "توين هاوس", "size_from": 200, "size_to": 280, "price_from": 10000000, "price_to": 16000000, "floor_options": "أرضي + أول", "views": ["بحر مباشر"], "payment_plans": ["خطة 8 سنين: 10% مقدم، 96 شهر"], "availability_status": "available"}
-      ],
-      "payment_plans": [
-        {"name": "خطة 8 سنين", "down_payment": "10%", "installments": "96 شهر", "delivery": "2027"}
-      ],
-      "amenities": ["شاطئ خاص", "أكوا بارك", "مطاعم وكافيهات", "فندق 5 نجوم", "مارينا يخوت"],
-      "delivery_status": "تحت الإنشاء — استلام صيف 2027"
     }
   ]
 }

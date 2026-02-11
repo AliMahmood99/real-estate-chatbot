@@ -78,6 +78,7 @@ def _format_properties(data: dict[str, Any]) -> str:
         location = project.get("location", "")
         area = project.get("area", "")
         description = project.get("description", "")
+        highlights = project.get("highlights", [])
         amenities = project.get("amenities", [])
         delivery_status = project.get("delivery_status", "")
         units = project.get("units", [])
@@ -97,12 +98,17 @@ def _format_properties(data: dict[str, Any]) -> str:
         if description:
             project_text.append(f"الوصف: {description}")
 
+        if highlights:
+            project_text.append("مميزات المشروع:")
+            for h in highlights:
+                project_text.append(f"  • {h}")
+
         if delivery_status:
             project_text.append(f"حالة التسليم: {delivery_status}")
 
         if amenities:
             amenities_text = "، ".join(amenities)
-            project_text.append(f"المرافق: {amenities_text}")
+            project_text.append(f"المرافق والخدمات: {amenities_text}")
 
         # Add units
         if units:
@@ -129,6 +135,14 @@ def _format_unit(unit: dict[str, Any]) -> str:
     unit_type = unit.get("type", "وحدة")
     lines = [f"- {unit_type}"]
 
+    # Bedrooms and bathrooms
+    bedrooms = unit.get("bedrooms")
+    bathrooms = unit.get("bathrooms")
+    if bedrooms:
+        lines.append(f"  غرف النوم: {bedrooms}")
+    if bathrooms:
+        lines.append(f"  الحمامات: {bathrooms}")
+
     # Size range
     size_from = unit.get("size_from")
     size_to = unit.get("size_to")
@@ -136,6 +150,11 @@ def _format_unit(unit: dict[str, Any]) -> str:
         lines.append(f"  المساحة: من {size_from} إلى {size_to} متر مربع")
     elif size_from:
         lines.append(f"  المساحة: {size_from} متر مربع")
+
+    # Finishing
+    finishing = unit.get("finishing")
+    if finishing:
+        lines.append(f"  التشطيب: {finishing}")
 
     # Price range
     price_from = unit.get("price_from")

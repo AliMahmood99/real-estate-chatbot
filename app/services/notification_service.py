@@ -55,7 +55,7 @@ def _format_notification_message(lead: Lead) -> str:
         Formatted message string
     """
     # Emoji for hot lead
-    message_parts = ["🔥 عميل Hot جديد!"]
+    message_parts = ["🔥 عميل Hot جديد — ركاز كومباوند!"]
 
     # Add name if available
     if lead.name:
