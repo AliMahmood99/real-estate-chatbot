@@ -18,6 +18,7 @@ async def get_or_create_lead(
 ) -> Lead:
     """
     Get existing lead by platform and sender_id, or create a new one.
+    For WhatsApp, automatically saves the sender_id as phone number.
 
     Args:
         session: Async database session
@@ -44,21 +45,47 @@ async def get_or_create_lead(
     if lead:
         # Update last_message_at
         lead.last_message_at = datetime.now(timezone.utc)
+
+        # Auto-fill phone from WhatsApp sender_id if not already set
+        if platform == "whatsapp" and not lead.phone:
+            lead.phone = _format_phone_number(sender_id)
+            logger.info(f"Auto-filled phone for existing lead {lead.id}: {lead.phone}")
+
         logger.info(f"Found existing lead: {lead.id}")
         return lead
 
-    # Create new lead
+    # Create new lead — auto-fill phone for WhatsApp
+    phone = _format_phone_number(sender_id) if platform == "whatsapp" else None
+
     lead = Lead(
         platform=platform_enum,
         platform_sender_id=sender_id,
+        phone=phone,
         status=LeadStatus.NEW,
         last_message_at=datetime.now(timezone.utc)
     )
     session.add(lead)
     await session.flush()
 
-    logger.info(f"Created new lead: {lead.id} on {platform}")
+    logger.info(f"Created new lead: {lead.id} on {platform}, phone={phone}")
     return lead
+
+
+def _format_phone_number(sender_id: str) -> str:
+    """
+    Format WhatsApp sender_id into a readable phone number.
+    WhatsApp sender_id is the full international number without '+'.
+    e.g. '201234567890' -> '+201234567890'
+
+    Args:
+        sender_id: WhatsApp sender ID (international phone number)
+
+    Returns:
+        Formatted phone number string with '+' prefix
+    """
+    # Remove any non-digit characters
+    digits = "".join(c for c in sender_id if c.isdigit())
+    return f"+{digits}" if digits else sender_id
 
 
 async def update_lead_from_ai(
