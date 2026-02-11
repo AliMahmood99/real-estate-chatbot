@@ -1,15 +1,29 @@
 const API_BASE = '/api/admin'
-const API_KEY = localStorage.getItem('admin_api_key') || 'your_secure_admin_api_key'
+
+export function getApiKey() {
+  return localStorage.getItem('admin_api_key') || ''
+}
+
+export function setApiKey(key) {
+  localStorage.setItem('admin_api_key', key)
+}
 
 async function request(endpoint, options = {}) {
+  const apiKey = getApiKey()
   const res = await fetch(`${API_BASE}${endpoint}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
-      'X-API-Key': API_KEY,
+      'X-API-Key': apiKey,
       ...options.headers,
     },
   })
+  if (res.status === 401 || res.status === 403) {
+    // Invalid API key — clear and reload
+    localStorage.removeItem('admin_api_key')
+    window.location.reload()
+    throw new Error('Invalid API key')
+  }
   if (!res.ok) throw new Error(`API Error: ${res.status}`)
   return res.json()
 }

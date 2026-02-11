@@ -1,16 +1,49 @@
 import React from 'react'
 
-const PLATFORM_STYLES = {
-  whatsapp: { bg: 'bg-green-100', text: 'text-green-800', label: 'WhatsApp' },
-  messenger: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Messenger' },
-  instagram: { bg: 'bg-purple-100', text: 'text-purple-800', label: 'Instagram' },
+const PLATFORM_CONFIG = {
+  whatsapp: {
+    bg: 'bg-emerald-50',
+    text: 'text-emerald-700',
+    border: 'border-emerald-200/60',
+    dot: 'bg-emerald-500',
+    label: 'WhatsApp',
+  },
+  messenger: {
+    bg: 'bg-blue-50',
+    text: 'text-blue-700',
+    border: 'border-blue-200/60',
+    dot: 'bg-blue-500',
+    label: 'Messenger',
+  },
+  instagram: {
+    bg: 'bg-fuchsia-50',
+    text: 'text-fuchsia-700',
+    border: 'border-fuchsia-200/60',
+    dot: 'bg-fuchsia-500',
+    label: 'Instagram',
+  },
 }
 
-export default function PlatformBadge({ platform }) {
-  const style = PLATFORM_STYLES[platform] || { bg: 'bg-gray-100', text: 'text-gray-800', label: platform }
+export default function PlatformBadge({ platform, size = 'sm' }) {
+  const config = PLATFORM_CONFIG[platform] || {
+    bg: 'bg-slate-50',
+    text: 'text-slate-600',
+    border: 'border-slate-200/60',
+    dot: 'bg-slate-400',
+    label: platform || 'Unknown',
+  }
+
+  const sizeClasses = size === 'sm'
+    ? 'px-2 py-0.5 text-[11px]'
+    : 'px-2.5 py-1 text-xs'
+
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${style.bg} ${style.text}`}>
-      {style.label}
+    <span className={`
+      inline-flex items-center gap-1.5 rounded-full font-medium border
+      ${config.bg} ${config.text} ${config.border} ${sizeClasses}
+    `}>
+      <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
+      {config.label}
     </span>
   )
 }
