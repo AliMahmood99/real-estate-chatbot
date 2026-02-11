@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.config import get_settings
-from app.database import check_db_connection
+from app.database import check_db_connection, create_tables
 from app.routers import admin, health, webhook
 
 settings = get_settings()
@@ -32,6 +32,12 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         logger.warning("Database connection failed — app starting without DB")
     else:
         logger.info("Database connection verified")
+        # Create tables if they don't exist
+        try:
+            await create_tables()
+            logger.info("Database tables ensured")
+        except Exception as e:
+            logger.error(f"Failed to create tables: {e}")
     yield
     # Shutdown
     logger.info("Shutting down Real Estate AI Chatbot...")

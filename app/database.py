@@ -17,16 +17,20 @@ logger = logging.getLogger(__name__)
 
 settings = get_settings()
 
-# Railway PostgreSQL requires SSL in production
-connect_args = {}
-if settings.is_production:
-    ssl_context = ssl.create_default_context()
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE
-    connect_args["ssl"] = ssl_context
+# Build connect args — Railway PostgreSQL may need SSL for external connections
+connect_args: dict = {}
+db_url = settings.async_database_url
+
+# Remove sslmode from URL if present (asyncpg handles SSL differently)
+if "sslmode=" in db_url or "ssl=" in db_url:
+    # Strip sslmode/ssl params from URL — we handle SSL via connect_args
+    import re
+    db_url = re.sub(r'[\?&](sslmode|ssl)=[^&]*', '', db_url)
+    # Clean up leftover ? or &
+    db_url = db_url.replace('?&', '?').rstrip('?')
 
 engine = create_async_engine(
-    settings.async_database_url,
+    db_url,
     echo=settings.APP_ENV == "development",
     pool_pre_ping=True,
     pool_size=10,

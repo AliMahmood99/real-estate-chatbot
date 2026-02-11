@@ -48,18 +48,16 @@ def do_run_migrations(connection: Connection) -> None:
 
 async def run_async_migrations() -> None:
     """Run migrations in 'online' mode with async engine."""
-    # Railway PostgreSQL requires SSL in production
-    connect_args = {}
-    if settings.is_production:
-        ssl_context = ssl.create_default_context()
-        ssl_context.check_hostname = False
-        ssl_context.verify_mode = ssl.CERT_NONE
-        connect_args["ssl"] = ssl_context
+    import re
+    db_url = settings.async_database_url
+    # Remove sslmode from URL if present (asyncpg handles SSL differently)
+    if "sslmode=" in db_url or "ssl=" in db_url:
+        db_url = re.sub(r'[\?&](sslmode|ssl)=[^&]*', '', db_url)
+        db_url = db_url.replace('?&', '?').rstrip('?')
 
     connectable = create_async_engine(
-        settings.async_database_url,
+        db_url,
         poolclass=pool.NullPool,
-        connect_args=connect_args,
     )
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)
