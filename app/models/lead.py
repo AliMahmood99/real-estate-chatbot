@@ -3,7 +3,7 @@
 import enum
 from datetime import datetime, timezone
 
-from sqlalchemy import DateTime, Enum, JSON, String, Text, func
+from sqlalchemy import DateTime, Enum, JSON, String, Text, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
@@ -30,6 +30,9 @@ class Lead(Base):
     """Lead model representing a potential customer."""
 
     __tablename__ = "leads"
+    __table_args__ = (
+        UniqueConstraint("platform", "platform_sender_id", name="uq_leads_platform_sender"),
+    )
 
     platform_sender_id: Mapped[str] = mapped_column(
         String(255), nullable=False, index=True

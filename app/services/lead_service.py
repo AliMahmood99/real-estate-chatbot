@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from typing import Any
 from uuid import UUID
 from sqlalchemy import select, and_
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.lead import Lead, LeadStatus, Platform
 
@@ -19,6 +20,7 @@ async def get_or_create_lead(
     """
     Get existing lead by platform and sender_id, or create a new one.
     For WhatsApp, automatically saves the sender_id as phone number.
+    Handles race conditions when two messages arrive simultaneously.
 
     Args:
         session: Async database session
@@ -28,25 +30,14 @@ async def get_or_create_lead(
     Returns:
         Lead instance (existing or newly created)
     """
-    # Convert platform string to enum
     platform_enum = Platform(platform)
 
     # Try to find existing lead
-    result = await session.execute(
-        select(Lead).where(
-            and_(
-                Lead.platform == platform_enum,
-                Lead.platform_sender_id == sender_id
-            )
-        )
-    )
-    lead = result.scalar_one_or_none()
+    lead = await _find_lead(session, platform_enum, sender_id)
 
     if lead:
-        # Update last_message_at
         lead.last_message_at = datetime.now(timezone.utc)
 
-        # Auto-fill phone from WhatsApp sender_id if not already set
         if platform == "whatsapp" and not lead.phone:
             lead.phone = _format_phone_number(sender_id)
             logger.info(f"Auto-filled phone for existing lead {lead.id}: {lead.phone}")
@@ -54,7 +45,7 @@ async def get_or_create_lead(
         logger.info(f"Found existing lead: {lead.id}")
         return lead
 
-    # Create new lead — auto-fill phone for WhatsApp
+    # Create new lead — handle race condition with try/except
     phone = _format_phone_number(sender_id) if platform == "whatsapp" else None
 
     lead = Lead(
@@ -65,10 +56,37 @@ async def get_or_create_lead(
         last_message_at=datetime.now(timezone.utc)
     )
     session.add(lead)
-    await session.flush()
 
-    logger.info(f"Created new lead: {lead.id} on {platform}, phone={phone}")
-    return lead
+    try:
+        await session.flush()
+        logger.info(f"Created new lead: {lead.id} on {platform}, phone={phone}")
+        return lead
+    except IntegrityError:
+        # Race condition: another request already created this lead
+        await session.rollback()
+        logger.info(f"Race condition detected for {platform}/{sender_id}, fetching existing lead")
+        lead = await _find_lead(session, platform_enum, sender_id)
+        if lead:
+            lead.last_message_at = datetime.now(timezone.utc)
+            return lead
+        raise  # Should never happen, but re-raise if it does
+
+
+async def _find_lead(
+    session: AsyncSession,
+    platform_enum: Platform,
+    sender_id: str
+) -> Lead | None:
+    """Find existing lead by platform and sender_id."""
+    result = await session.execute(
+        select(Lead).where(
+            and_(
+                Lead.platform == platform_enum,
+                Lead.platform_sender_id == sender_id
+            )
+        )
+    )
+    return result.scalar_one_or_none()
 
 
 def _format_phone_number(sender_id: str) -> str:

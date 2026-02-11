@@ -82,7 +82,7 @@ async def create_tables() -> None:
 
 
 async def _add_missing_columns() -> None:
-    """Add new columns to existing tables if they don't exist."""
+    """Add new columns and constraints to existing tables if they don't exist."""
     alter_statements = [
         "ALTER TABLE leads ADD COLUMN IF NOT EXISTS preferred_type VARCHAR(255)",
         "ALTER TABLE leads ADD COLUMN IF NOT EXISTS preferred_size VARCHAR(255)",
@@ -92,6 +92,21 @@ async def _add_missing_columns() -> None:
         async with engine.begin() as conn:
             for stmt in alter_statements:
                 await conn.execute(text(stmt))
-        logger.info("Missing columns added successfully")
+
+            # Add unique constraint to prevent duplicate leads (safe — skips if exists)
+            await conn.execute(text("""
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (
+                        SELECT 1 FROM pg_constraint WHERE conname = 'uq_leads_platform_sender'
+                    ) THEN
+                        ALTER TABLE leads
+                        ADD CONSTRAINT uq_leads_platform_sender
+                        UNIQUE (platform, platform_sender_id);
+                    END IF;
+                END $$;
+            """))
+
+        logger.info("Missing columns and constraints added successfully")
     except Exception as e:
-        logger.error(f"Error adding missing columns: {e}")
+        logger.error(f"Error adding missing columns/constraints: {e}")
