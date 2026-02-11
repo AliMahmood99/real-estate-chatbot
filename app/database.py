@@ -71,8 +71,27 @@ async def check_db_connection() -> bool:
 
 
 async def create_tables() -> None:
-    """Create all tables (for development only)."""
+    """Create all tables and add missing columns."""
     from app.models.base import Base
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     logger.info("Database tables created")
+
+    # Add missing columns (safe to run multiple times — uses IF NOT EXISTS)
+    await _add_missing_columns()
+
+
+async def _add_missing_columns() -> None:
+    """Add new columns to existing tables if they don't exist."""
+    alter_statements = [
+        "ALTER TABLE leads ADD COLUMN IF NOT EXISTS preferred_type VARCHAR(255)",
+        "ALTER TABLE leads ADD COLUMN IF NOT EXISTS preferred_size VARCHAR(255)",
+        "ALTER TABLE leads ADD COLUMN IF NOT EXISTS payment_plan VARCHAR(255)",
+    ]
+    try:
+        async with engine.begin() as conn:
+            for stmt in alter_statements:
+                await conn.execute(text(stmt))
+        logger.info("Missing columns added successfully")
+    except Exception as e:
+        logger.error(f"Error adding missing columns: {e}")
