@@ -45,6 +45,9 @@ class Lead(Base):
     )
     budget_range: Mapped[str | None] = mapped_column(String(255), nullable=True)
     timeline: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    preferred_type: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    preferred_size: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    payment_plan: Mapped[str | None] = mapped_column(String(255), nullable=True)
     status: Mapped[LeadStatus] = mapped_column(
         Enum(LeadStatus), nullable=False, default=LeadStatus.NEW, index=True
     )

@@ -6,7 +6,7 @@ import traceback
 from app.schemas.webhook import extract_platform, extract_sender_id, extract_message_text
 from app.services.lead_service import get_or_create_lead, update_lead_from_ai
 from app.services.claude_service import generate_response
-from app.services.meta_service import send_text_message
+from app.services.meta_service import send_text_message, send_whatsapp_list
 from app.services.knowledge import load_properties
 from app.services.notification_service import notify_sales_team
 from app.database import async_session
@@ -90,6 +90,10 @@ async def process_incoming_message(payload: dict) -> None:
             ai_result = await generate_response(conversation_history, property_data)
             bot_reply = ai_result.get("reply", "عذراً، حصل مشكلة تقنية. حاول تاني بعد شوية.")
             lead_data = ai_result.get("lead_data", {})
+
+            # Clean up markdown for WhatsApp
+            # WhatsApp uses *text* for bold, not **text**
+            bot_reply = _clean_for_whatsapp(bot_reply)
             logger.info(f"[WEBHOOK] Claude response: {len(bot_reply)} chars")
 
             # Save bot message
@@ -151,3 +155,25 @@ async def _get_or_create_conversation(session, lead_id, platform) -> Conversatio
         await session.flush()
 
     return conversation
+
+
+def _clean_for_whatsapp(text: str) -> str:
+    """
+    Clean Claude's markdown output for WhatsApp formatting.
+
+    WhatsApp supports:
+      *bold*  _italic_  ~strikethrough~  ```monospace```
+    But NOT **bold** or other markdown syntax.
+    """
+    import re
+
+    # Convert **bold** to *bold* (WhatsApp bold)
+    text = re.sub(r'\*\*(.+?)\*\*', r'*\1*', text)
+
+    # Remove ### headers — just keep the text
+    text = re.sub(r'#{1,3}\s*', '', text)
+
+    # Remove emoji-only lines that look like markdown decorators
+    # Keep actual content lines
+
+    return text.strip()

@@ -164,6 +164,128 @@ async def _send_instagram_message(recipient_id: str, text: str) -> bool:
         return True
 
 
+async def send_whatsapp_buttons(
+    recipient_id: str,
+    body_text: str,
+    buttons: list[dict[str, str]],
+) -> bool:
+    """
+    Send WhatsApp interactive reply buttons (max 3 buttons).
+
+    Args:
+        recipient_id: Recipient's phone number
+        body_text: Main message text
+        buttons: List of dicts with 'id' and 'title' keys (max 3)
+
+    Returns:
+        True if sent successfully
+    """
+    phone_id = settings.WHATSAPP_PHONE_NUMBER_ID
+    access_token = settings.WHATSAPP_ACCESS_TOKEN
+
+    if not phone_id or not access_token:
+        logger.error("[META] WhatsApp credentials missing for buttons")
+        return False
+
+    url = f"https://graph.facebook.com/v21.0/{phone_id}/messages"
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json",
+    }
+
+    # Build button rows (max 3)
+    button_rows = []
+    for btn in buttons[:3]:
+        button_rows.append({
+            "type": "reply",
+            "reply": {
+                "id": btn["id"],
+                "title": btn["title"][:20]  # WhatsApp max 20 chars
+            }
+        })
+
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": recipient_id,
+        "type": "interactive",
+        "interactive": {
+            "type": "button",
+            "body": {"text": body_text},
+            "action": {"buttons": button_rows}
+        }
+    }
+
+    logger.info(f"[META] Sending WhatsApp buttons to {recipient_id}")
+
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(url, headers=headers, json=payload)
+            logger.info(f"[META] WhatsApp buttons response: {response.status_code}")
+            response.raise_for_status()
+            return True
+    except Exception as e:
+        logger.error(f"[META] Failed to send WhatsApp buttons: {e}")
+        return False
+
+
+async def send_whatsapp_list(
+    recipient_id: str,
+    body_text: str,
+    button_text: str,
+    sections: list[dict],
+) -> bool:
+    """
+    Send WhatsApp interactive list message (max 10 items).
+
+    Args:
+        recipient_id: Recipient's phone number
+        body_text: Main message text
+        button_text: Text on the list button (max 20 chars)
+        sections: List of section dicts with 'title' and 'rows'
+
+    Returns:
+        True if sent successfully
+    """
+    phone_id = settings.WHATSAPP_PHONE_NUMBER_ID
+    access_token = settings.WHATSAPP_ACCESS_TOKEN
+
+    if not phone_id or not access_token:
+        logger.error("[META] WhatsApp credentials missing for list")
+        return False
+
+    url = f"https://graph.facebook.com/v21.0/{phone_id}/messages"
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json",
+    }
+
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": recipient_id,
+        "type": "interactive",
+        "interactive": {
+            "type": "list",
+            "body": {"text": body_text},
+            "action": {
+                "button": button_text[:20],
+                "sections": sections
+            }
+        }
+    }
+
+    logger.info(f"[META] Sending WhatsApp list to {recipient_id}")
+
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(url, headers=headers, json=payload)
+            logger.info(f"[META] WhatsApp list response: {response.status_code}")
+            response.raise_for_status()
+            return True
+    except Exception as e:
+        logger.error(f"[META] Failed to send WhatsApp list: {e}")
+        return False
+
+
 async def _send_typing_indicator(platform: Literal["messenger", "instagram"], recipient_id: str) -> None:
     """
     Send typing indicator for Messenger/Instagram.

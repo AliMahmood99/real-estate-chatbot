@@ -129,6 +129,27 @@ async def update_lead_from_ai(
             updated = True
             logger.info(f"Updated lead {lead_id} timeline: {lead.timeline}")
 
+    # Update preferred_type
+    if "preferred_type" in extracted_data and extracted_data["preferred_type"]:
+        if lead.preferred_type != extracted_data["preferred_type"]:
+            lead.preferred_type = extracted_data["preferred_type"]
+            updated = True
+            logger.info(f"Updated lead {lead_id} preferred_type: {lead.preferred_type}")
+
+    # Update preferred_size
+    if "preferred_size" in extracted_data and extracted_data["preferred_size"]:
+        if lead.preferred_size != extracted_data["preferred_size"]:
+            lead.preferred_size = extracted_data["preferred_size"]
+            updated = True
+            logger.info(f"Updated lead {lead_id} preferred_size: {lead.preferred_size}")
+
+    # Update payment_plan
+    if "payment_plan" in extracted_data and extracted_data["payment_plan"]:
+        if lead.payment_plan != extracted_data["payment_plan"]:
+            lead.payment_plan = extracted_data["payment_plan"]
+            updated = True
+            logger.info(f"Updated lead {lead_id} payment_plan: {lead.payment_plan}")
+
     # Update classification/status
     if "classification" in extracted_data and extracted_data["classification"]:
         classification = extracted_data["classification"].lower()
