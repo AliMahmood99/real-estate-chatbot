@@ -348,6 +348,31 @@ async def get_conversation_messages(
     ]
 
 
+@router.delete("/leads/reset")
+async def reset_all_leads(
+    db: AsyncSession = Depends(get_db),
+    _: str = Depends(verify_api_key),
+) -> dict:
+    """Delete ALL leads, conversations, and messages. Fresh start."""
+    from sqlalchemy import delete
+
+    # Delete in correct order (messages -> conversations -> leads) due to FK constraints
+    msg_result = await db.execute(delete(Message))
+    conv_result = await db.execute(delete(Conversation))
+    lead_result = await db.execute(delete(Lead))
+
+    await db.commit()
+
+    return {
+        "status": "ok",
+        "deleted": {
+            "messages": msg_result.rowcount,
+            "conversations": conv_result.rowcount,
+            "leads": lead_result.rowcount,
+        }
+    }
+
+
 @router.post("/leads/backfill")
 async def backfill_lead_data(
     db: AsyncSession = Depends(get_db),
