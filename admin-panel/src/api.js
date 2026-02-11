@@ -42,4 +42,6 @@ export const api = {
   getLeadConversations: (id) => request(`/leads/${id}/conversations`),
   getConversationMessages: (id) => request(`/conversations/${id}/messages`),
   getProperties: () => request('/properties'),
+  resetAllLeads: () => request('/leads/reset', { method: 'DELETE' }),
+  backfillLeads: () => request('/leads/backfill', { method: 'POST' }),
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { ChevronLeft, ChevronRight, Search, Filter, Users, RefreshCw } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Search, Filter, Users, RefreshCw, Trash2 } from 'lucide-react'
 import { api } from '../api'
 import LeadTable from '../components/LeadTable'
 
@@ -58,6 +58,18 @@ export default function Leads() {
 
   const hasFilters = filters.platform || filters.status
 
+  const handleReset = async () => {
+    if (!window.confirm('Are you sure you want to delete ALL leads, conversations, and messages? This cannot be undone.')) return
+    if (!window.confirm('FINAL WARNING: This will permanently delete everything. Continue?')) return
+    try {
+      const result = await api.resetAllLeads()
+      alert(`Deleted: ${result.deleted.leads} leads, ${result.deleted.conversations} conversations, ${result.deleted.messages} messages`)
+      loadLeads()
+    } catch (err) {
+      alert('Failed to reset: ' + err.message)
+    }
+  }
+
   return (
     <div className="p-6 lg:p-8 max-w-7xl mx-auto">
       {/* Page Header */}
@@ -71,13 +83,22 @@ export default function Leads() {
             )}
           </p>
         </div>
-        <button
-          onClick={() => loadLeads()}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all"
-        >
-          <RefreshCw size={15} />
-          Refresh
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleReset}
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-red-200 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 hover:border-red-300 transition-all"
+          >
+            <Trash2 size={15} />
+            Reset All
+          </button>
+          <button
+            onClick={() => loadLeads()}
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all"
+          >
+            <RefreshCw size={15} />
+            Refresh
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
