@@ -13,7 +13,7 @@ settings = get_settings()
 
 # Claude API configuration
 MODEL = "claude-haiku-4-5-20251001"
-MAX_TOKENS = 1024
+MAX_TOKENS = 512  # Reduced for faster responses — bot replies are short (3-5 sentences)
 
 
 async def generate_response(
