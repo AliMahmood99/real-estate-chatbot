@@ -2,6 +2,7 @@
 
 import logging
 import json
+import traceback
 from app.schemas.webhook import extract_platform, extract_sender_id, extract_message_text
 from app.services.lead_service import get_or_create_lead, update_lead_from_ai
 from app.services.claude_service import generate_response
@@ -19,28 +20,38 @@ logger = logging.getLogger(__name__)
 async def process_incoming_message(payload: dict) -> None:
     """Process incoming webhook payload from Meta platforms."""
     try:
+        logger.info(f"[WEBHOOK] Raw payload keys: {list(payload.keys())}")
+        logger.info(f"[WEBHOOK] Payload object: {payload.get('object')}")
+
         platform = extract_platform(payload)
         if not platform:
-            logger.warning("Unknown platform in webhook payload")
+            logger.warning(f"[WEBHOOK] Unknown platform in webhook payload: {payload.get('object')}")
             return
 
         sender_id = extract_sender_id(payload, platform)
         message_text = extract_message_text(payload, platform)
 
+        logger.info(f"[WEBHOOK] Platform={platform}, sender_id={sender_id}, message_text={message_text!r}")
+
         if not sender_id or not message_text:
-            logger.debug(f"Ignoring non-text message or status update on {platform}")
+            logger.info(f"[WEBHOOK] Ignoring non-text message or status update on {platform}")
             return
 
-        logger.info(f"Processing message from {platform}: sender={sender_id}")
+        logger.info(f"[WEBHOOK] Processing message from {platform}: sender={sender_id}, text={message_text[:50]!r}")
 
         async with async_session() as session:
             # Get or create lead
+            logger.info("[WEBHOOK] Step 1: Getting or creating lead...")
             lead = await get_or_create_lead(session, platform, sender_id)
+            logger.info(f"[WEBHOOK] Lead: {lead.id}")
 
             # Get or create conversation
+            logger.info("[WEBHOOK] Step 2: Getting or creating conversation...")
             conversation = await _get_or_create_conversation(session, lead.id, platform)
+            logger.info(f"[WEBHOOK] Conversation: {conversation.id}")
 
             # Save customer message
+            logger.info("[WEBHOOK] Step 3: Saving customer message...")
             customer_msg = Message(
                 conversation_id=conversation.id,
                 sender_type=SenderType.CUSTOMER,
@@ -52,6 +63,7 @@ async def process_incoming_message(payload: dict) -> None:
             await session.flush()
 
             # Get conversation history (last 20 messages)
+            logger.info("[WEBHOOK] Step 4: Fetching conversation history...")
             result = await session.execute(
                 select(Message)
                 .where(Message.conversation_id == conversation.id)
@@ -66,15 +78,22 @@ async def process_incoming_message(payload: dict) -> None:
                 role = "user" if msg.sender_type == SenderType.CUSTOMER else "assistant"
                 conversation_history.append({"role": role, "content": msg.content})
 
+            logger.info(f"[WEBHOOK] History has {len(conversation_history)} messages")
+
             # Load property data
+            logger.info("[WEBHOOK] Step 5: Loading property data...")
             property_data = await load_properties()
+            logger.info(f"[WEBHOOK] Property data loaded: {len(property_data)} chars")
 
             # Generate AI response
+            logger.info("[WEBHOOK] Step 6: Calling Claude API...")
             ai_result = await generate_response(conversation_history, property_data)
             bot_reply = ai_result.get("reply", "عذراً، حصل مشكلة تقنية. حاول تاني بعد شوية.")
             lead_data = ai_result.get("lead_data", {})
+            logger.info(f"[WEBHOOK] Claude response: {len(bot_reply)} chars")
 
             # Save bot message
+            logger.info("[WEBHOOK] Step 7: Saving bot message...")
             bot_msg = Message(
                 conversation_id=conversation.id,
                 sender_type=SenderType.BOT,
@@ -85,12 +104,16 @@ async def process_incoming_message(payload: dict) -> None:
             conversation.message_count += 1
 
             await session.commit()
+            logger.info("[WEBHOOK] Step 8: DB commit successful")
 
             # Send response to customer
-            await send_text_message(platform, sender_id, bot_reply)
+            logger.info(f"[WEBHOOK] Step 9: Sending reply to {platform} recipient {sender_id}...")
+            send_success = await send_text_message(platform, sender_id, bot_reply)
+            logger.info(f"[WEBHOOK] Message sent: {send_success}")
 
             # Update lead with AI-extracted data
             if lead_data:
+                logger.info(f"[WEBHOOK] Step 10: Updating lead with AI data: {lead_data}")
                 async with async_session() as update_session:
                     lead = await update_lead_from_ai(update_session, lead.id, lead_data)
                     await update_session.commit()
@@ -99,8 +122,11 @@ async def process_incoming_message(payload: dict) -> None:
                     if lead and lead.status == LeadStatus.HOT:
                         await notify_sales_team(lead)
 
+            logger.info("[WEBHOOK] Processing complete!")
+
     except Exception as e:
-        logger.error(f"Error processing incoming message: {e}", exc_info=True)
+        logger.error(f"[WEBHOOK] ERROR processing incoming message: {e}")
+        logger.error(f"[WEBHOOK] Traceback: {traceback.format_exc()}")
 
 
 async def _get_or_create_conversation(session, lead_id, platform) -> Conversation:

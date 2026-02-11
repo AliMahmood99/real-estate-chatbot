@@ -27,7 +27,20 @@ async def verify_webhook(
 @router.post("/webhook")
 async def receive_webhook(request: Request, background_tasks: BackgroundTasks) -> dict:
     """Receive webhook from Meta platforms. Returns 200 immediately, processes in background."""
-    payload = await request.json()
-    logger.info(f"Webhook received: object={payload.get('object')}")
+    try:
+        payload = await request.json()
+    except Exception as e:
+        logger.error(f"[WEBHOOK-ROUTER] Failed to parse JSON body: {e}")
+        return {"status": "error", "message": "Invalid JSON"}
+
+    logger.info(f"[WEBHOOK-ROUTER] Received: object={payload.get('object')}, entries={len(payload.get('entry', []))}")
+
+    # Log the full payload for debugging (truncated)
+    import json
+    payload_str = json.dumps(payload, ensure_ascii=False, default=str)
+    if len(payload_str) > 2000:
+        payload_str = payload_str[:2000] + "..."
+    logger.info(f"[WEBHOOK-ROUTER] Full payload: {payload_str}")
+
     background_tasks.add_task(process_incoming_message, payload)
     return {"status": "ok"}

@@ -33,9 +33,22 @@ async def generate_response(
     try:
         # Build system prompt with caching
         system_prompt = build_system_prompt(property_data)
+        logger.info(f"[CLAUDE] System prompt built: {len(system_prompt)} chars")
+
+        # Check API key
+        api_key = settings.ANTHROPIC_API_KEY
+        if not api_key:
+            logger.error("[CLAUDE] ANTHROPIC_API_KEY is empty!")
+            return {
+                "reply": "عذراً، حصل مشكلة تقنية. حاول تاني بعد شوية.",
+                "lead_data": {}
+            }
+        logger.info(f"[CLAUDE] API key present: {api_key[:8]}...{api_key[-4:]}")
 
         # Initialize Claude client
-        client = anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
+        client = anthropic.AsyncAnthropic(api_key=api_key)
+
+        logger.info(f"[CLAUDE] Calling model={MODEL}, messages={len(conversation_history)}, max_tokens={MAX_TOKENS}")
 
         # Call Claude API with prompt caching
         message = await client.messages.create(
@@ -53,41 +66,50 @@ async def generate_response(
 
         # Extract response text
         response_text = message.content[0].text
+        logger.info(f"[CLAUDE] Raw response: {len(response_text)} chars")
 
         # Parse response: extract clean reply and lead data
         clean_reply, lead_data = _parse_response(response_text)
 
-        logger.info(f"Claude response generated: {len(clean_reply)} chars, lead_data: {bool(lead_data)}")
-        logger.debug(f"Lead data extracted: {lead_data}")
+        logger.info(f"[CLAUDE] Response generated: {len(clean_reply)} chars, lead_data: {bool(lead_data)}")
 
         return {
             "reply": clean_reply,
             "lead_data": lead_data
         }
 
+    except anthropic.AuthenticationError as e:
+        logger.error(f"[CLAUDE] Authentication error (invalid API key): {e}")
+        return {
+            "reply": "عذراً، حصل مشكلة تقنية. حاول تاني بعد شوية.",
+            "lead_data": {}
+        }
+
     except anthropic.APITimeoutError as e:
-        logger.error(f"Claude API timeout: {e}")
+        logger.error(f"[CLAUDE] API timeout: {e}")
         return {
             "reply": "عذراً، الرد استغرق وقت طويل. ممكن تعيد المحاولة؟",
             "lead_data": {}
         }
 
     except anthropic.RateLimitError as e:
-        logger.error(f"Claude API rate limit: {e}")
+        logger.error(f"[CLAUDE] Rate limit: {e}")
         return {
             "reply": "عذراً، النظام مشغول دلوقتي. جرب تاني بعد شوية.",
             "lead_data": {}
         }
 
     except anthropic.APIError as e:
-        logger.error(f"Claude API error: {e}")
+        logger.error(f"[CLAUDE] API error: status={getattr(e, 'status_code', 'N/A')}, message={e}")
         return {
             "reply": "عذراً، حصل مشكلة تقنية. حاول تاني بعد شوية.",
             "lead_data": {}
         }
 
     except Exception as e:
-        logger.error(f"Unexpected error generating Claude response: {e}", exc_info=True)
+        import traceback
+        logger.error(f"[CLAUDE] Unexpected error: {e}")
+        logger.error(f"[CLAUDE] Traceback: {traceback.format_exc()}")
         return {
             "reply": "عذراً، حصل خطأ غير متوقع. ممكن تجرب تاني؟",
             "lead_data": {}

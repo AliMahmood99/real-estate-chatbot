@@ -76,9 +76,19 @@ async def send_text_message(
 
 async def _send_whatsapp_message(recipient_id: str, text: str) -> bool:
     """Send message via WhatsApp Cloud API."""
-    url = f"https://graph.facebook.com/v21.0/{settings.WHATSAPP_PHONE_NUMBER_ID}/messages"
+    phone_id = settings.WHATSAPP_PHONE_NUMBER_ID
+    access_token = settings.WHATSAPP_ACCESS_TOKEN
+
+    if not phone_id:
+        logger.error("[META] WHATSAPP_PHONE_NUMBER_ID is empty!")
+        return False
+    if not access_token:
+        logger.error("[META] WHATSAPP_ACCESS_TOKEN is empty!")
+        return False
+
+    url = f"https://graph.facebook.com/v21.0/{phone_id}/messages"
     headers = {
-        "Authorization": f"Bearer {settings.WHATSAPP_ACCESS_TOKEN}",
+        "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json",
     }
     payload = {
@@ -90,12 +100,13 @@ async def _send_whatsapp_message(recipient_id: str, text: str) -> bool:
         }
     }
 
-    logger.debug(f"WhatsApp API request to {url}")
+    logger.info(f"[META] WhatsApp API request to {url}, recipient={recipient_id}, text_len={len(text)}")
 
     async with httpx.AsyncClient(timeout=30.0) as client:
         response = await client.post(url, headers=headers, json=payload)
+        logger.info(f"[META] WhatsApp API response status={response.status_code}")
+        logger.info(f"[META] WhatsApp API response body={response.text}")
         response.raise_for_status()
-        logger.debug(f"WhatsApp API response: {response.json()}")
         return True
 
 
