@@ -68,7 +68,7 @@ export default function LeadTable({ leads, compact = false }) {
             {!compact && (
               <th className="text-left py-3 px-4 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Project</th>
             )}
-            <th className="text-left py-3 px-4 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Date</th>
+            <th className="text-left py-3 px-4 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Last Message</th>
             <th className="py-3 px-4 w-8"></th>
           </tr>
         </thead>
@@ -114,7 +114,7 @@ export default function LeadTable({ leads, compact = false }) {
                 </td>
               )}
               <td className="py-3.5 px-4">
-                <span className="text-xs text-slate-400">{formatDate(lead.created_at)}</span>
+                <span className="text-xs text-slate-400">{formatDate(lead.last_message_at)}</span>
               </td>
               <td className="py-3.5 px-2">
                 <ChevronRight size={14} className="text-slate-300 group-hover:text-blue-500 transition-colors" />
